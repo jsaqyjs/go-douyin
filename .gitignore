@@ -1,0 +1,10 @@
+.idea/
+.vscode/
+
+.env
+.env.*
+!.env.example
+
+*.exe
+*.log
+coverage.out
