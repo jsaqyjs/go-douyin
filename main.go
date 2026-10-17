@@ -11,6 +11,15 @@ import (
 // the <icon src="AllIcons.Actions.Execute"/> icon in the gutter and select the <b>Run</b> menu item from here.</p>
 
 func main() {
+	if err := database.InitRedis(); err != nil {
+		log.Fatal(err)
+	}
+
+	defer func() {
+		if err := database.CloseRedis(); err != nil {
+			log.Printf("关闭Redis失败: %v", err)
+		}
+	}()
 	// 1. 初始化 MySQL
 	if err := database.InitDB(); err != nil {
 		log.Fatal(err)
@@ -31,6 +40,6 @@ func main() {
 	log.Println("MySQL 数据库初始化成功")
 	log.Println("五张业务表迁移完成")
 	r := routers.InitRouter()
-	r.Run(":8080")
+	r.Run(":8085")
 
 }

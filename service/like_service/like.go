@@ -64,6 +64,11 @@ func LikeVideo(userID, videoID uint64) (bool, error) {
 	if err != nil {
 		return false, fmt.Errorf("点赞操作失败: %w", err)
 	}
+	// MySQL事务提交后，清理旧缓存
+	if changed {
+		DeleteLikeCache(userID, videoID)
+	}
+
 	return changed, nil
 }
 
@@ -127,7 +132,9 @@ func UnlikeVideo(userID, videoID uint64) (bool, error) {
 	if err != nil {
 		return false, fmt.Errorf("取消点赞失败: %w", err)
 	}
-
+	if changed {
+		DeleteLikeCache(userID, videoID)
+	}
 	return changed, nil
 }
 
@@ -150,6 +157,12 @@ func IsVideoLiked(userID, videoID uint64) (bool, error) {
 	if err != nil {
 		return false, err
 	}
+	// 2. 查询Redis点赞状态缓存
+	if liked, hit := GetLikeCache(userID, videoID); hit {
+		return liked, nil
+	}
+
+	// 3. Redis未命中，则查询MySQL
 	// 统计当前用户对该视频的点赞关系
 	var count int64
 	err = database.DB.Model(&models.VideoLike{}).
@@ -162,5 +175,8 @@ func IsVideoLiked(userID, videoID uint64) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	return count == 1, nil
+	liked := count > 0
+	// 4. 回填Redis，下次查询可以直接命中
+	SetLikeCache(userID, videoID, liked)
+	return liked, nil
 }

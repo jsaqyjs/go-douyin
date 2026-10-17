@@ -2,6 +2,12 @@ package models
 
 import "time"
 
+const (
+	VideoStatusReview    uint8 = 0
+	VideoStatusPublished uint8 = 1
+	VideoStatusOffline   uint8 = 2
+)
+
 // Video 用户 ID：1
 // 视频 ID：100
 // 标题：今天去南京旅游

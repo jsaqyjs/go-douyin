@@ -2,4 +2,107 @@
 GET https://examples.http-client.intellij.net/get
     ?generated-in=GoLand
 
-###
+
+### 1. 健康检查
+GET http://localhost:8080/health
+
+
+### 2. 注册用户
+POST http://localhost:8085/users/register
+Content-Type: application/json
+
+{
+  "username": "zhangsan",
+  "password": "12345678",
+  "nickname": "爱吃火锅的小张"
+}
+
+
+### 3. 用户登录
+POST http://localhost:8085/users/login
+Content-Type: application/json
+
+{
+  "username": "zhangsan",
+  "password": "12345678"
+}
+
+
+### 4. 使用JWT查询当前用户
+GET http://localhost:8085/users/me
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnby1kb3V5aW4iLCJzdWIiOiIxIiwiZXhwIjoxNzkyMjMzNDY3LCJpYXQiOjE3OTIyMjYyNjd9.Yte7Bm30MitZeGtrIib4YS1PiGCQYcor9hA79z1-F-0
+
+
+### 5. 不携带Token，应该返回401
+GET http://localhost:8085/users/me
+
+
+### 6. 携带错误Token，应该返回401
+GET http://localhost:8085/users/me
+Authorization: Bearer abc.invalid.token
+
+
+
+### 发布视频
+POST http://localhost:8085/videos
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnby1kb3V5aW4iLCJzdWIiOiIxIiwiZXhwIjoxNzkyMjQzMjE2LCJpYXQiOjE3OTIyMzYwMTZ9.M2v3J-zwL3qZmUXOEmCR95JLBQ_FHfXKJ9m33WQayOk
+
+{
+  "title": "我的第一条抖音视频",
+  "description": "今天分享 Go 后端学习",
+  "play_url": "https://example.com/video001.mp4",
+  "cover_url": "https://example.com/cover001.jpg"
+}
+### 查询视频详情
+GET http://localhost:8085/videos/1
+### 查询第一页
+GET http://localhost:8085/videos?page=1&page_size=10
+
+### 未登录发布视频
+POST http://localhost:8085/videos
+Content-Type: application/json
+
+{
+  "title": "未登录视频",
+  "play_url": "https://example.com/test.mp4"
+}
+
+
+
+
+### 1. 点赞视频
+POST http://localhost:8085/videos/1/like
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnby1kb3V5aW4iLCJzdWIiOiIxIiwiZXhwIjoxNzkyMjQzMjE2LCJpYXQiOjE3OTIyMzYwMTZ9.M2v3J-zwL3qZmUXOEmCR95JLBQ_FHfXKJ9m33WQayOk
+
+
+### 2. 再次点赞同一视频
+POST http://localhost:8080/videos/1/like
+Authorization: Bearer {{token}}
+
+
+### 3. 查询当前用户点赞状态
+GET http://localhost:8085/videos/1/like-status
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnby1kb3V5aW4iLCJzdWIiOiIxIiwiZXhwIjoxNzkyMjQzMjE2LCJpYXQiOjE3OTIyMzYwMTZ9.M2v3J-zwL3qZmUXOEmCR95JLBQ_FHfXKJ9m33WQayOk
+
+
+
+### 4. 查询视频详情，观察 like_count
+GET http://localhost:8085/videos/1
+
+
+### 5. 取消点赞
+DELETE http://localhost:8085/videos/1/like
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnby1kb3V5aW4iLCJzdWIiOiIxIiwiZXhwIjoxNzkyMjQzMjE2LCJpYXQiOjE3OTIyMzYwMTZ9.M2v3J-zwL3qZmUXOEmCR95JLBQ_FHfXKJ9m33WQayOk
+
+
+
+### 6. 再次取消点赞
+DELETE http://localhost:8080/videos/1/like
+Authorization: Bearer {{token}}
+
+
+### 7. 再次查询点赞状态
+GET http://localhost:8085/videos/1/like-status
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnby1kb3V5aW4iLCJzdWIiOiIxIiwiZXhwIjoxNzkyMjQzMjE2LCJpYXQiOjE3OTIyMzYwMTZ9.M2v3J-zwL3qZmUXOEmCR95JLBQ_FHfXKJ9m33WQayOk
+
