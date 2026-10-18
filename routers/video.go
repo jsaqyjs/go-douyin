@@ -33,7 +33,7 @@ func PublishVideoHandler(c *gin.Context) {
 		return
 	}
 
-	video, err := video_service.PublishVideo(userID, req)
+	video, queued, err := video_service.PublishAndEnqueueVideo(userID, req)
 	if err != nil {
 		slog.Error("发布视频失败", "error", err)
 
@@ -44,11 +44,24 @@ func PublishVideoHandler(c *gin.Context) {
 		})
 		return
 	}
-
+	if !queued {
+		c.JSON(http.StatusAccepted, gin.H{
+			"code":    202,
+			"message": "视频已保存，Feed分发待确认",
+			"data": gin.H{
+				"video":       video,
+				"feed_queued": false,
+			},
+		})
+		return
+	}
 	c.JSON(http.StatusCreated, gin.H{
 		"code":    201,
 		"message": "发布成功",
-		"data":    video,
+		"data": gin.H{
+			"video":       video,
+			"feed_queued": true,
+		},
 	})
 }
 
