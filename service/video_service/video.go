@@ -1,6 +1,7 @@
 package video_service
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"go-douyin/database"
@@ -8,7 +9,6 @@ import (
 	"go-douyin/models"
 	"go-douyin/mq"
 	"gorm.io/gorm"
-	"log/slog"
 )
 
 var ErrVideoNotFound = errors.New("视频不存在")
@@ -35,29 +35,73 @@ func PublishAndEnqueueVideo(
 	req dto.PublishVideoRequest,
 ) (dto.VideoResponse, bool, error) {
 	// 1. 保存视频
-	video, err := PublishVideo(authorID, req)
+	var video models.Video
+
+	// 视频和事件必须在同一个事务中写入
+	err := database.DB.Transaction(func(tx *gorm.DB) error {
+		// 1. 创建视频
+		video = models.Video{
+			AuthorID:    authorID,
+			Title:       req.Title,
+			Description: req.Description,
+			PlayURL:     req.PlayURL,
+			CoverURL:    req.CoverURL,
+			Status:      models.VideoStatusPublished,
+		}
+
+		if err := tx.Create(&video).Error; err != nil {
+			return err
+		}
+
+		// 2. 构造视频发布事件
+		event := mq.VideoPublishedEvent{
+			VideoID:   video.ID,
+			AuthorID:  video.AuthorID,
+			CreatedAt: video.CreatedAt,
+		}
+		// 3. 将事件序列化为JSON
+		payload, err := json.Marshal(event)
+		if err != nil {
+			return err
+		}
+
+		// 4. 写入Outbox表
+		outbox := models.OutboxEvent{
+			EventType:  mq.RoutingKey,
+			Payload:    string(payload),
+			Status:     models.OutboxPending,
+			RetryCount: 0,
+		}
+		if err := tx.Create(&outbox).Error; err != nil {
+			return err
+		}
+		return nil
+	})
 	if err != nil {
 		return dto.VideoResponse{}, false, err
 	}
-	// 2. 构造发布事件
-	event := mq.VideoPublishedEvent{
-		VideoID:   video.ID,
-		AuthorID:  video.AuthorID,
-		CreatedAt: video.CreatedAt,
-	}
 
-	// 3. 发布RabbitMQ消息
-	if err := mq.PublishVideoPublished(event); err != nil {
-		slog.Error(
-			"视频已保存，但Feed事件未确认",
-			"video_id", video.ID,
-			"error", err,
-		)
-
-		return video, false, nil
-	}
-
-	return video, true, nil
+	// true：事件已持久化到Outbox
+	// 不代表RabbitMQ已经收到
+	return ToVideoResponse(video), true, nil
+	//}
+	//if err != nil {
+	//	return dto.VideoResponse{}, false, err
+	//}
+	//
+	//
+	//// 3. 发布RabbitMQ消息
+	//if err := mq.PublishVideoPublished(event); err != nil {
+	//	slog.Error(
+	//		"视频已保存，但Feed事件未确认",
+	//		"video_id", video.ID,
+	//		"error", err,
+	//	)
+	//
+	//	return video, false, nil
+	//}
+	//
+	//return video, true, nil
 }
 
 func PublishVideo(authorID uint64,

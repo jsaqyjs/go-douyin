@@ -33,7 +33,7 @@ func main() {
 	}()
 	// 3. 创建数据库表
 	if err := database.DB.AutoMigrate(&models.User{}, &models.Video{},
-		&models.Comment{}, &models.VideoLike{},
+		&models.Comment{}, &models.VideoLike{}, &models.OutboxEvent{},
 		&models.Follow{}); err != nil {
 		log.Fatal("数据库迁移失败: ", err)
 	}
