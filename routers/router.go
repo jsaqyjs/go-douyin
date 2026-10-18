@@ -15,6 +15,9 @@ func InitRouter() *gin.Engine {
 	r.GET("/videos/:id", GetVideoHandler)
 	r.GET("/videos/:id/comments", ListCommentsHandler)
 	r.GET("/comments/:id/replies", ListRepliesHandler)
+	// 公开：关注列表、粉丝列表
+	r.GET("/users/:id/following", ListFollowingHandler)
+	r.GET("/users/:id/followers", ListFollowersHandler)
 	// 需要JWT认证的接口组
 	auth := r.Group("/")
 	auth.Use(middleware.JWTAuthMiddleware())
@@ -27,5 +30,9 @@ func InitRouter() *gin.Engine {
 	// 需要登录：发布评论、删除评论
 	auth.POST("/videos/:id/comments", CreateCommentHandler)
 	auth.DELETE("/comments/:id", DeleteCommentHandler)
+	// 需要登录：关注、取消关注、关注状态
+	auth.POST("/users/:id/follow", FollowUserHandler)
+	auth.DELETE("/users/:id/follow", UnfollowUserHandler)
+	auth.GET("/users/:id/follow-status", FollowStatusHandler)
 	return r
 }
