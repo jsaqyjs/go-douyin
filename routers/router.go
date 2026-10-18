@@ -34,5 +34,7 @@ func InitRouter() *gin.Engine {
 	auth.POST("/users/:id/follow", FollowUserHandler)
 	auth.DELETE("/users/:id/follow", UnfollowUserHandler)
 	auth.GET("/users/:id/follow-status", FollowStatusHandler)
+	// 关注Feed
+	auth.GET("/feed/following", FollowingFeedHandler)
 	return r
 }
