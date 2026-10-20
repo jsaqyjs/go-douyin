@@ -29,7 +29,7 @@ func FanoutVideo(
 		var rows []FollowRow
 
 		err := database.DB.WithContext(ctx).
-			Table("follows").
+			Table("follow").
 			Select("id, follower_id").
 			Where(
 				"following_id = ? AND id > ?",

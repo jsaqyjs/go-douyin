@@ -47,7 +47,7 @@ func PushVideoToFeed(
 	}
 
 	// 2. 仅保留最新1000条
-	// 按Score升序排列，删除较旧的成员
+	// 按Score升序排列，删除较旧的视频
 	count, err := database.Redis.ZCard(ctx, key).Result()
 	if err != nil {
 		return err
@@ -137,6 +137,7 @@ func LoadFeedVideos(
 			result,
 			video_service.ToVideoResponse(video),
 		)
+
 	}
 
 	return result, nil

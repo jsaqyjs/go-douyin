@@ -20,6 +20,40 @@ func ListFollowingFeed(
 	limit int,
 	cursorString string,
 ) (dto.FollowingFeedResponse, error) {
+	// 1. 参数校验
+	if limit < 1 || limit > 50 {
+		return dto.FollowingFeedResponse{}, ErrInvalidLimit
+	}
+
+	// 2. 只有第一页才尝试Redis
+	if cursorString == "" {
+		result, hit, err := TryRedisFollowingFeed(
+			ctx,
+			currentUserID,
+			limit,
+		)
+
+		if err == nil && hit {
+			return result, nil
+		}
+
+		// Redis不可用或缓存不足，不影响用户查看Feed
+		// 可以按需要增加日志记录缓存失败原因
+	}
+	// 3. 回退到第29课的MySQL游标查询
+	return listFollowingFeedFromMySQL(
+		ctx,
+		currentUserID,
+		limit,
+		cursorString,
+	)
+}
+func listFollowingFeedFromMySQL(
+	ctx context.Context,
+	currentUserID uint64,
+	limit int,
+	cursorString string,
+) (dto.FollowingFeedResponse, error) {
 	result := dto.FollowingFeedResponse{
 		List: make([]dto.VideoResponse, 0),
 	}

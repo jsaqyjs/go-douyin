@@ -1,17 +1,36 @@
 package routers
 
 import (
+	"context"
 	"errors"
 	"github.com/gin-gonic/gin"
 	"go-douyin/middleware"
+	"go-douyin/service/feed_service"
 	"go-douyin/service/follow_service"
 	"log/slog"
 	"net/http"
 	"strconv"
+	"time"
 )
 
-// 获取用户ID
+func invalidateUserFeed(userID uint64) {
+	ctx, cancel := context.WithTimeout(
+		context.Background(),
+		time.Second,
+	)
+	defer cancel()
+	if err := feed_service.InvalidateFollowingFeed(
+		ctx, userID,
+	); err != nil {
+		slog.Warn(
+			"关注关系更新成功，但Feed缓存失效失败",
+			"user_id", userID,
+			"error", err,
+		)
+	}
+}
 
+// 获取用户ID
 func parseFollowUserID(c *gin.Context) (uint64, bool) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 
@@ -99,7 +118,9 @@ func FollowUserHandler(c *gin.Context) {
 	if handleFollowError(c, err) {
 		return
 	}
-
+	if changed {
+		invalidateUserFeed(currentID)
+	}
 	message := "关注成功"
 	if !changed {
 		message = "已经关注过该用户"
@@ -133,7 +154,9 @@ func UnfollowUserHandler(c *gin.Context) {
 	if handleFollowError(c, err) {
 		return
 	}
-
+	if changed {
+		invalidateUserFeed(currentID)
+	}
 	message := "取消关注成功"
 	if !changed {
 		message = "当前未关注该用户"
