@@ -48,7 +48,7 @@ func TryRedisFollowingFeed(
 		)
 		defer rebuildCancel()
 
-		if err := RebuildFollowingFeed(
+		if err = EnsureFollowingFeedCache(
 			rebuildCtx, userID,
 		); err != nil {
 			return result, false, err
