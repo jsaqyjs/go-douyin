@@ -291,3 +291,31 @@ GET http://127.0.0.1:8080/users/1/videos?limit=1000
 
 ### 第43课：不存在的用户
 GET http://127.0.0.1:8080/users/999999/videos?limit=10
+### 第44课：搜索Go相关视频
+GET http://127.0.0.1:8085/videos/search?keyword=Go&limit=10
+
+
+### 第44课：搜索中文关键词
+GET http://127.0.0.1:8085/videos/search?keyword=后端&limit=10
+
+
+### 第44课：测试搜索第一页
+GET http://127.0.0.1:8080/videos/search?keyword=Go&limit=2
+
+
+### 第44课：测试搜索第二页
+# 把cursor替换成第一页实际返回的next_cursor
+GET http://127.0.0.1:8085/videos/search?keyword=Go&limit=2&cursor=这里填第一页的next_cursor
+
+
+### 第44课：非法关键词
+GET http://127.0.0.1:8080/videos/search?keyword=%20%20%20
+
+
+### 第44课：非法游标
+GET http://127.0.0.1:8080/videos/search?keyword=Go&cursor=invalid!!!
+
+
+### 第44课：非法limit
+GET http://127.0.0.1:8080/videos/search?keyword=Go&limit=100
+

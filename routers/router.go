@@ -20,6 +20,9 @@ func InitRouter() *gin.Engine {
 	// 不需要登录的接口
 	r.POST("/users/register", RegisterHandler)
 	r.POST("/users/login", middleware.RedisIPLimit(loginLimiter), LoginHandler)
+	// 第44课：公开视频搜索
+	r.GET("/videos/search", SearchVideosHandler)
+	
 	// 公开接口：任何人都能查看正常发布的视频
 
 	r.GET("/videos", ListVideosHandler)
