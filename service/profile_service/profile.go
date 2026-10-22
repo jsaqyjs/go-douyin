@@ -7,6 +7,7 @@ import (
 	"go-douyin/database"
 	"go-douyin/dto"
 	"go-douyin/models"
+	"go-douyin/utils"
 	"gorm.io/gorm"
 	"time"
 )
@@ -119,56 +120,75 @@ func NormalizePagination(
 func ListUserVideos(
 	ctx context.Context,
 	userID uint64,
-	page int,
 	limit int,
+	cursorString string,
 ) (dto.UserVideosResponse, error) {
-	page, limit = NormalizePagination(page, limit)
 	result := dto.UserVideosResponse{
-		List:  make([]dto.ProfileVideoResponse, 0),
-		Page:  page,
-		Limit: limit,
+		List: make([]dto.ProfileVideoResponse, 0),
 	}
-	// 确认被查询的用户存在
-	var user models.User
+	// 默认10条，最多50条
+	if limit <= 0 {
+		limit = 10
+	}
+	if limit > 50 {
+		limit = 50
+	}
+	// 解析游标。第一页没有游标
+	var cursor utils.FeedCursor
+	if cursorString != "" {
+		var err error
+		cursor, err = utils.DecodeFeedCursor(cursorString)
+		if err != nil {
+			return result, err
+		}
+	}
 	db := database.DB.WithContext(ctx)
+	// 确认用户存在
+	var user models.User
 	err := db.Select("id").
 		First(&user, userID).Error
 
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return result, ErrUserNotFound
 	}
-
 	if err != nil {
 		return result, err
 	}
 
-	// 统计公开视频总数
-	err = db.Model(&models.Video{}).
+	if err != nil {
+		return result, err
+	}
+	// 基础查询：只查询该用户的公开视频
+	query := db.Model(&models.Video{}).
 		Where(
 			"author_id = ? AND status = ?",
 			userID, 1,
-		).
-		Count(&result.Total).Error
-
-	if err != nil {
-		return result, err
+		)
+	if cursorString != "" {
+		query = query.Where(
+			`(created_at < ? OR
+              (created_at = ? AND id < ?))`,
+			cursor.Time,
+			cursor.Time,
+			cursor.ID,
+		)
 	}
-
-	offset := (page - 1) * limit
+	// 多查一条，判断是否有下一页
 	var videos []models.Video
-
-	err = db.Where(
-		"author_id = ? AND status = ?",
-		userID, 1,
-	).
+	err = query.
 		Order("created_at DESC").
 		Order("id DESC").
-		Offset(offset).
-		Limit(limit).
+		Limit(limit + 1).
 		Find(&videos).Error
 
 	if err != nil {
 		return result, err
+	}
+
+	result.HasMore = len(videos) > limit
+
+	if result.HasMore {
+		videos = videos[:limit]
 	}
 	// 将数据库模型转换为API响应
 	for _, video := range videos {
@@ -187,10 +207,21 @@ func ListUserVideos(
 				),
 			},
 		)
-		
+
 	}
-	result.HasMore = int64(offset)+
-		int64(len(videos)) < result.Total
+	// 只要还有下一页，就使用当前页最后一条
+	// 视频的位置生成下一次请求的游标
+	if result.HasMore && len(videos) > 0 {
+		last := videos[len(videos)-1]
+
+		result.NextCursor, err = utils.EncodeFeedCursor(
+			last.CreatedAt,
+			last.ID,
+		)
+		if err != nil {
+			return dto.UserVideosResponse{}, err
+		}
+	}
 
 	return result, nil
 }

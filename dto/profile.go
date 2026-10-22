@@ -26,9 +26,7 @@ type ProfileVideoResponse struct {
 
 // 用户作品列表响应
 type UserVideosResponse struct {
-	List    []ProfileVideoResponse `json:"list"`
-	Page    int                    `json:"page"`
-	Limit   int                    `json:"limit"`
-	Total   int64                  `json:"total"`
-	HasMore bool                   `json:"has_more"`
+	List       []ProfileVideoResponse `json:"list"`
+	NextCursor string                 `json:"next_cursor"`
+	HasMore    bool                   `json:"has_more"`
 }

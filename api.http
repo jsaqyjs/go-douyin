@@ -148,7 +148,7 @@ POST http://localhost:8085/users/login
 Content-Type: application/json
 
 {
-  "username": "zhangsan",
+  "username": "lisi",
   "password": "12345678"
 }
 ### 1. 张三关注李四
@@ -237,3 +237,57 @@ GET http://127.0.0.1:8080/users/abc/profile
 
 ### 第41课：测试非法分页参数
 GET http://127.0.0.1:8080/users/1/videos?page=abc&limit=10
+
+
+
+### 第42课：收藏视频
+POST http://127.0.0.1:8085/videos/2/favorite
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnby1kb3V5aW4iLCJzdWIiOiIxIiwiZXhwIjoxNzkyNjU0NzIzLCJpYXQiOjE3OTI2NDc1MjN9.Co5vVcSs-x4m5NjTX_3M9DUssoWk1v1DzOcErs_BIv8
+
+
+### 第42课：重复收藏（仍应成功）
+POST http://127.0.0.1:8080/videos/1/favorite
+Authorization: Bearer {{token}}
+
+
+### 第42课：查看我的收藏列表
+GET http://127.0.0.1:8085/users/me/favorites?page=1&limit=10
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnby1kb3V5aW4iLCJzdWIiOiIxIiwiZXhwIjoxNzkyNjU0NzIzLCJpYXQiOjE3OTI2NDc1MjN9.Co5vVcSs-x4m5NjTX_3M9DUssoWk1v1DzOcErs_BIv8
+
+
+### 第42课：取消收藏
+DELETE http://127.0.0.1:8085/videos/2/favorite
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnby1kb3V5aW4iLCJzdWIiOiIxIiwiZXhwIjoxNzkyNjU0NzIzLCJpYXQiOjE3OTI2NDc1MjN9.Co5vVcSs-x4m5NjTX_3M9DUssoWk1v1DzOcErs_BIv8
+
+
+### 第42课：重复取消收藏
+DELETE http://127.0.0.1:8080/videos/1/favorite
+Authorization: Bearer {{token}}
+
+
+### 第42课：非法视频ID
+POST http://127.0.0.1:8085/videos/abc/favorite
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnby1kb3V5aW4iLCJzdWIiOiIxIiwiZXhwIjoxNzkyNjU0NzIzLCJpYXQiOjE3OTI2NDc1MjN9.Co5vVcSs-x4m5NjTX_3M9DUssoWk1v1DzOcErs_BIv8
+
+
+// eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnby1kb3V5aW4iLCJzdWIiOiIzIiwiZXhwIjoxNzkyNjU2ODE2LCJpYXQiOjE3OTI2NDk2MTZ9.Dkotd93J2K6ZoWewPtWhcuTiuaztkxJsXWZiIFOn9mI
+
+### 第43课：用户作品第一页
+GET http://127.0.0.1:8085/users/3/videos?limit=2
+
+
+### 第43课：用户作品第二页
+# 将下面的cursor替换成第一页返回的next_cursor
+GET http://127.0.0.1:8085/users/3/videos?limit=2&cursor=eyJ0aW1lIjoiMjAyNi0xMC0yMFQxMTowNTo1OS43MSswODowMCIsImlkIjoxMX0
+
+
+### 第43课：非法游标
+GET http://127.0.0.1:8080/users/1/videos?limit=2&cursor=invalid!!!
+
+
+### 第43课：非法limit
+GET http://127.0.0.1:8080/users/1/videos?limit=1000
+
+
+### 第43课：不存在的用户
+GET http://127.0.0.1:8080/users/999999/videos?limit=10

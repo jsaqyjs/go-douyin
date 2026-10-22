@@ -6,6 +6,7 @@ import (
 	"go-douyin/service/profile_service"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 // 解析 URL 中的用户ID
@@ -66,21 +67,11 @@ func GetUserVideosHandler(c *gin.Context) {
 		return
 	}
 
-	page := 1
 	limit := 10
-
-	// 使用Query检查参数是否存在
-	if raw, exists := c.GetQuery("page"); exists {
-		n, err := strconv.Atoi(raw)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"code":    400,
-				"message": "page必须是整数",
-			})
-			return
-		}
-		page = n
-	}
+	// 3. 获取游标
+	cursor := strings.TrimSpace(
+		c.Query("cursor"),
+	)
 
 	if raw, exists := c.GetQuery("limit"); exists {
 		n, err := strconv.Atoi(raw)
@@ -97,8 +88,8 @@ func GetUserVideosHandler(c *gin.Context) {
 	result, err := profile_service.ListUserVideos(
 		c.Request.Context(),
 		userID,
-		page,
 		limit,
+		cursor,
 	)
 
 	if errors.Is(err, profile_service.ErrUserNotFound) {
