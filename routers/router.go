@@ -21,10 +21,15 @@ func InitRouter() *gin.Engine {
 	r.POST("/users/register", RegisterHandler)
 	r.POST("/users/login", middleware.RedisIPLimit(loginLimiter), LoginHandler)
 	// 公开接口：任何人都能查看正常发布的视频
+
 	r.GET("/videos", ListVideosHandler)
 	r.GET("/videos/:id", GetVideoHandler)
 	r.GET("/videos/:id/comments", middleware.RedisUserLimit(commentLimiter), ListCommentsHandler)
 	r.GET("/comments/:id/replies", ListRepliesHandler)
+	// 用户主页
+	r.GET("/users/:id/profile", GetUserProfileHandler)
+	// 用户作品列表
+	r.GET("/users/:id/videos", GetUserVideosHandler)
 	// 公开：关注列表、粉丝列表
 	r.GET("/users/:id/following", ListFollowingHandler)
 	r.GET("/users/:id/followers", ListFollowersHandler)

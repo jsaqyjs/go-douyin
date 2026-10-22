@@ -12,9 +12,9 @@ POST http://localhost:8085/users/register
 Content-Type: application/json
 
 {
-  "username": "zhangsan",
+  "username": "wangwu",
   "password": "12345678",
-  "nickname": "爱吃火锅的小张"
+  "nickname": "爱吃火锅的小五"
 }
 
 
@@ -23,7 +23,7 @@ POST http://localhost:8085/users/login
 Content-Type: application/json
 
 {
-  "username": "zhangsan",
+  "username": "wangwu",
   "password": "12345678"
 }
 
@@ -46,13 +46,13 @@ Authorization: Bearer abc.invalid.token
 ### 发布视频
 POST http://localhost:8085/videos
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnby1kb3V5aW4iLCJzdWIiOiIxIiwiZXhwIjoxNzkyMjQzMjE2LCJpYXQiOjE3OTIyMzYwMTZ9.M2v3J-zwL3qZmUXOEmCR95JLBQ_FHfXKJ9m33WQayOk
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnby1kb3V5aW4iLCJzdWIiOiI0IiwiZXhwIjoxNzkyMzEzNjIzLCJpYXQiOjE3OTIzMDY0MjN9.wQPBJMy9gj9lkMkRiFGZSeSvuA0uPEfYgb3qyV1FQIU
 
 {
-  "title": "我的第一条抖音视频",
-  "description": "今天分享 Go 后端学习",
-  "play_url": "https://example.com/video001.mp4",
-  "cover_url": "https://example.com/cover001.jpg"
+  "title": "我的第三条抖音视频",
+  "description": "今天分享 C 后端学习",
+  "play_url": "https://example.com/video005.mp4",
+  "cover_url": "https://example.com/cover005.jpg"
 }
 ### 查询视频详情
 GET http://localhost:8085/videos/1
@@ -106,3 +106,134 @@ Authorization: Bearer {{token}}
 GET http://localhost:8085/videos/1/like-status
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnby1kb3V5aW4iLCJzdWIiOiIxIiwiZXhwIjoxNzkyMjQzMjE2LCJpYXQiOjE3OTIyMzYwMTZ9.M2v3J-zwL3qZmUXOEmCR95JLBQ_FHfXKJ9m33WQayOk
 
+
+
+### 1. 发表一级评论
+POST http://localhost:8085/videos/1/comments
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnby1kb3V5aW4iLCJzdWIiOiIxIiwiZXhwIjoxNzkyMjU1NjAxLCJpYXQiOjE3OTIyNDg0MDF9.xw3tLYwwtz2ZzbtelOXxrUUS24kqpxyp5ulaqO2agB4
+Content-Type: application/json
+
+{
+  "content": "这是我的第一条评论！"
+}
+
+
+### 2. 查询视频一级评论
+GET http://localhost:8085/videos/1/comments?page=1&page_size=10
+
+
+### 3. 回复评论（将10换成实际父评论ID）
+POST http://localhost:8085/videos/1/comments
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnby1kb3V5aW4iLCJzdWIiOiIxIiwiZXhwIjoxNzkyMjU1NjAxLCJpYXQiOjE3OTIyNDg0MDF9.xw3tLYwwtz2ZzbtelOXxrUUS24kqpxyp5ulaqO2agB4
+Content-Type: application/json
+
+{
+  "content": "我来回复这条评论",
+  "parent_id": 1
+}
+
+
+### 4. 查询评论回复
+GET http://localhost:8085/comments/1/replies?page=1&page_size=10
+
+
+### 5. 删除回复或一级评论
+DELETE http://localhost:8085/comments/1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnby1kb3V5aW4iLCJzdWIiOiIxIiwiZXhwIjoxNzkyMjU1NjAxLCJpYXQiOjE3OTIyNDg0MDF9.xw3tLYwwtz2ZzbtelOXxrUUS24kqpxyp5ulaqO2agB4
+
+
+
+###  用户登录
+POST http://localhost:8085/users/login
+Content-Type: application/json
+
+{
+  "username": "zhangsan",
+  "password": "12345678"
+}
+### 1. 张三关注李四
+POST http://localhost:8085/users/4/follow
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnby1kb3V5aW4iLCJzdWIiOiIxIiwiZXhwIjoxNzkyNTY1OTE1LCJpYXQiOjE3OTI1NTg3MTV9.szJaKBZOVA-Qwl4XRd0y-3aqOx99d0HruUQMLKmfOJ0
+### 2. 再次关注李四
+POST http://localhost:8085/users/3/follow
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnby1kb3V5aW4iLCJzdWIiOiIxIiwiZXhwIjoxNzkyNTA5ODYyLCJpYXQiOjE3OTI1MDI2NjJ9.6olmebpbbcm93-R7fwNj6mx2J4Q-YDHcfRAtFP5EMhs
+
+
+### 3. 查询张三是否关注李四
+GET http://localhost:8085/users/3/follow-status
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnby1kb3V5aW4iLCJzdWIiOiIxIiwiZXhwIjoxNzkyMzEzNzQ2LCJpYXQiOjE3OTIzMDY1NDZ9.BTJxc_DhYLMQYAVpKb7WdklEm2za3PZhra0TaryW60U
+
+
+### 4. 查看张三的关注列表
+GET http://localhost:8085/users/1/following?page=1&page_size=10
+
+
+### 5. 查看李四的粉丝列表
+GET http://localhost:8085/users/3/followers?page=1&page_size=10
+
+
+### 6. 张三取消关注李四
+DELETE http://localhost:8085/users/5/follow
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnby1kb3V5aW4iLCJzdWIiOiIxIiwiZXhwIjoxNzkyMzEzNzQ2LCJpYXQiOjE3OTIzMDY1NDZ9.BTJxc_DhYLMQYAVpKb7WdklEm2za3PZhra0TaryW60U
+
+
+### 7. 再次取消关注
+DELETE http://localhost:8085/users/3/follow
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnby1kb3V5aW4iLCJzdWIiOiIxIiwiZXhwIjoxNzkyNTA5ODYyLCJpYXQiOjE3OTI1MDI2NjJ9.6olmebpbbcm93-R7fwNj6mx2J4Q-YDHcfRAtFP5EMhs
+
+
+### 8. 不允许关注自己
+POST http://localhost:8080/users/1/follow
+Authorization: Bearer {{token}}
+
+### 关注Feed第一页
+GET http://localhost:8085/feed/following?limit=3
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnby1kb3V5aW4iLCJzdWIiOiIxIiwiZXhwIjoxNzkyNTA5ODYyLCJpYXQiOjE3OTI1MDI2NjJ9.6olmebpbbcm93-R7fwNj6mx2J4Q-YDHcfRAtFP5EMhs
+// 游标 eyJ0aW1lIjoiMjAyNi0xMC0xOFQxNDo1NDowNS43MjcrMDg6MDAiLCJpZCI6M30
+
+### 关注Feed第二页
+GET http://localhost:8085/feed/following?limit=3&cursor=eyJ0aW1lIjoiMjAyNi0xMC0xOFQxNDo1NDowNS43MjcrMDg6MDAiLCJpZCI6M30
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnby1kb3V5aW4iLCJzdWIiOiIxIiwiZXhwIjoxNzkyMzEzNzQ2LCJpYXQiOjE3OTIzMDY1NDZ9.BTJxc_DhYLMQYAVpKb7WdklEm2za3PZhra0TaryW60U
+
+### 李四发布视频，触发MQ事件
+POST http://localhost:8085/videos
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnby1kb3V5aW4iLCJzdWIiOiIzIiwiZXhwIjoxNzkyMzMzODc0LCJpYXQiOjE3OTIzMjY2NzR9.Lu-wMSjjE9hEcFGts4x9R5ckrrb0HT8BfQ5lOTHYTjU
+Content-Type: application/json
+
+{
+  "title": "RabbitMQ宕机期间发布的视频",
+  "play_url": "https://example.com/offline-test.mp4"
+}
+
+### 李四发布视频，触发MQ事件
+POST http://localhost:8085/videos
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnby1kb3V5aW4iLCJzdWIiOiIzIiwiZXhwIjoxNzkyNDY5ODMxLCJpYXQiOjE3OTI0NjI2MzF9.v_chfglgF7mjtrsaX75NL9BCQZvWmdOga0NlGJTA8YU
+Content-Type: application/json
+
+{
+  "title": "第33课消息队列测试3",
+  "play_url": "https://example.com/test33.mp4"
+}
+
+### 第41课：查看用户主页
+GET http://127.0.0.1:8085/users/1/profile
+
+
+### 第41课：查询用户第一页作品
+GET http://127.0.0.1:8085/users/1/videos?page=1&limit=10
+
+
+### 第41课：查询用户第二页作品
+GET http://127.0.0.1:8080/users/1/videos?page=2&limit=10
+
+
+### 第41课：测试不存在的用户
+GET http://127.0.0.1:8080/users/999999/profile
+
+
+### 第41课：测试非法用户ID
+GET http://127.0.0.1:8080/users/abc/profile
+
+
+### 第41课：测试非法分页参数
+GET http://127.0.0.1:8080/users/1/videos?page=abc&limit=10
