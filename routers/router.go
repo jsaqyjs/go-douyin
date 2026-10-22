@@ -51,5 +51,12 @@ func InitRouter() *gin.Engine {
 	auth.GET("/users/:id/follow-status", FollowStatusHandler)
 	// 关注Feed
 	auth.GET("/feed/following", feedConcurrency, FollowingFeedHandler)
+
+	// 第42课：视频收藏
+	auth.POST("/videos/:id/favorite", FavoriteVideoHandler)
+
+	auth.DELETE("/videos/:id/favorite", UnfavoriteVideoHandler)
+
+	auth.GET("/users/me/favorites", ListFavoritesHandler)
 	return r
 }
