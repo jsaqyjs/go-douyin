@@ -1,7 +1,6 @@
 package routers
 
 import (
-	"context"
 	"github.com/gin-gonic/gin"
 	"go-douyin/middleware"
 	"time"
@@ -10,32 +9,21 @@ import (
 func InitRouter() *gin.Engine {
 
 	r := gin.Default()
-	loginLimiter := middleware.NewRateLimitStore(10, 10)
-	commentLimiter := middleware.NewRateLimitStore(5, 5)
+	loginLimiter := middleware.NewRedisRateLimiter("douyin:ratelimit:login",
+		3,
+		time.Minute)
+	commentLimiter := middleware.NewRedisRateLimiter("douyin:ratelimit:comment",
+		5,
+		time.Minute)
 	feedConcurrency := middleware.ConcurrencyLimit(20)
-	cleanupCtx, cancelCleanup := context.WithCancel(
-		context.Background(),
-	)
-	defer cancelCleanup()
 
-	go loginLimiter.StartCleanup(
-		cleanupCtx,
-		time.Minute,
-		10*time.Minute,
-	)
-
-	go commentLimiter.StartCleanup(
-		cleanupCtx,
-		time.Minute,
-		10*time.Minute,
-	)
 	// 不需要登录的接口
 	r.POST("/users/register", RegisterHandler)
-	r.POST("/users/login", middleware.IPLimit(loginLimiter), LoginHandler)
+	r.POST("/users/login", middleware.RedisIPLimit(loginLimiter), LoginHandler)
 	// 公开接口：任何人都能查看正常发布的视频
 	r.GET("/videos", ListVideosHandler)
 	r.GET("/videos/:id", GetVideoHandler)
-	r.GET("/videos/:id/comments", middleware.UserLimit(commentLimiter), ListCommentsHandler)
+	r.GET("/videos/:id/comments", middleware.RedisUserLimit(commentLimiter), ListCommentsHandler)
 	r.GET("/comments/:id/replies", ListRepliesHandler)
 	// 公开：关注列表、粉丝列表
 	r.GET("/users/:id/following", ListFollowingHandler)
