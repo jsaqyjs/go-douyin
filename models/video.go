@@ -20,6 +20,7 @@ type Video struct {
 
 	Title       string `gorm:"size:200;not null"`
 	Description string `gorm:"type:text"`
+	Category    string `gorm:"type:varchar(32);not null;default:general;index" json:"category"`
 	PlayURL     string `gorm:"size:1024;not null"`
 	CoverURL    string `gorm:"size:1024"`
 

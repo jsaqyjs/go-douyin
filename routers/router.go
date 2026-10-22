@@ -22,7 +22,7 @@ func InitRouter() *gin.Engine {
 	r.POST("/users/login", middleware.RedisIPLimit(loginLimiter), LoginHandler)
 	// 第44课：公开视频搜索
 	r.GET("/videos/search", SearchVideosHandler)
-	
+
 	// 公开接口：任何人都能查看正常发布的视频
 	r.GET("/videos/hot", ListHotVideosHandler)
 	r.GET("/videos", ListVideosHandler)
@@ -61,5 +61,8 @@ func InitRouter() *gin.Engine {
 	auth.DELETE("/videos/:id/favorite", UnfavoriteVideoHandler)
 
 	auth.GET("/users/me/favorites", ListFavoritesHandler)
+
+	// 第46课：个性化推荐Feed
+	auth.GET("/feed/recommend", ListRecommendFeedHandler)
 	return r
 }
