@@ -319,3 +319,18 @@ GET http://127.0.0.1:8080/videos/search?keyword=Go&cursor=invalid!!!
 ### 第44课：非法limit
 GET http://127.0.0.1:8080/videos/search?keyword=Go&limit=100
 
+
+### 第45课：获取热门视频Top10
+GET http://127.0.0.1:8080/videos/hot?limit=10
+
+
+### 第45课：获取热门视频Top3
+GET http://127.0.0.1:8085/videos/hot?limit=3
+
+
+### 第45课：非法limit
+GET http://127.0.0.1:8080/videos/hot?limit=100
+
+
+### 第45课：不传limit，默认10
+GET http://127.0.0.1:8080/videos/hot

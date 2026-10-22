@@ -1,9 +1,11 @@
 package main
 
 import (
+	"context"
 	"go-douyin/database"
 	"go-douyin/models"
 	"go-douyin/routers"
+	"go-douyin/service/hot_service"
 	"log"
 )
 
@@ -34,11 +36,17 @@ func main() {
 	// 3. 创建数据库表
 	if err := database.DB.AutoMigrate(&models.User{}, &models.Video{},
 		&models.Comment{}, &models.VideoLike{}, &models.OutboxEvent{},
-		&models.Follow{}); err != nil {
+		&models.Follow{}, &models.VideoFavorite{}); err != nil {
 		log.Fatal("数据库迁移失败: ", err)
 	}
 	log.Println("MySQL 数据库初始化成功")
 	log.Println("五张业务表迁移完成")
+	ctx, cancel := context.WithCancel(
+		context.Background(),
+	)
+	defer cancel()
+
+	go hot_service.RunHotWorker(ctx)
 	r := routers.InitRouter()
 	r.Run(":8085")
 

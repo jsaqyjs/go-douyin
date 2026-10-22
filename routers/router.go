@@ -24,7 +24,7 @@ func InitRouter() *gin.Engine {
 	r.GET("/videos/search", SearchVideosHandler)
 	
 	// 公开接口：任何人都能查看正常发布的视频
-
+	r.GET("/videos/hot", ListHotVideosHandler)
 	r.GET("/videos", ListVideosHandler)
 	r.GET("/videos/:id", GetVideoHandler)
 	r.GET("/videos/:id/comments", middleware.RedisUserLimit(commentLimiter), ListCommentsHandler)
