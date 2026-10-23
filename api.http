@@ -334,3 +334,20 @@ GET http://127.0.0.1:8080/videos/hot?limit=100
 
 ### 第45课：不传limit，默认10
 GET http://127.0.0.1:8080/videos/hot
+
+
+### 第47课：验证多路召回
+GET http://127.0.0.1:8085/feed/recommend?limit=10
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnby1kb3V5aW4iLCJzdWIiOiIzIiwiZXhwIjoxNzkyNzI1OTg4LCJpYXQiOjE3OTI3MTg3ODh9.F1FCWjPGfM3lfylC_YwibvF6lElW2vy-YnjAFiCIbUA
+
+### 第48课：上传MP4
+POST http://127.0.0.1:8085/videos/upload
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnby1kb3V5aW4iLCJzdWIiOiIzIiwiZXhwIjoxNzkyNzUzNzI0LCJpYXQiOjE3OTI3NDY1MjR9.FcjvoiwWCoV-F6M8F-ga9Jol9nFsMcNfTD2GGt55i0E
+Content-Type: multipart/form-data; boundary=UploadBoundary
+
+--UploadBoundary
+Content-Disposition: form-data; name="file"; filename="2月9日.mp4"
+Content-Type: video/mp4
+
+< C:/Users/ASUS/Videos/2月9日.mp4
+--UploadBoundary--

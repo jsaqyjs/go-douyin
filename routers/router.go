@@ -3,6 +3,7 @@ package routers
 import (
 	"github.com/gin-gonic/gin"
 	"go-douyin/middleware"
+	"go-douyin/service/upload_service"
 	"time"
 )
 
@@ -17,9 +18,12 @@ func InitRouter() *gin.Engine {
 		time.Minute)
 	feedConcurrency := middleware.ConcurrencyLimit(20)
 
+	// 获取私有视频地址
+	r.GET("/videos/:id/play-url", GetVideoPlayURLHandler)
 	// 不需要登录的接口
 	r.POST("/users/register", RegisterHandler)
 	r.POST("/users/login", middleware.RedisIPLimit(loginLimiter), LoginHandler)
+
 	// 第44课：公开视频搜索
 	r.GET("/videos/search", SearchVideosHandler)
 
@@ -36,6 +40,7 @@ func InitRouter() *gin.Engine {
 	// 公开：关注列表、粉丝列表
 	r.GET("/users/:id/following", ListFollowingHandler)
 	r.GET("/users/:id/followers", ListFollowersHandler)
+
 	// 需要JWT认证的接口组
 	auth := r.Group("/")
 	auth.Use(middleware.JWTAuthMiddleware())
@@ -62,6 +67,10 @@ func InitRouter() *gin.Engine {
 
 	auth.GET("/users/me/favorites", ListFavoritesHandler)
 
+	// 上传视频
+	auth.POST("/videos/upload", middleware.UploadBodyLimit(
+		upload_service.MaxVideoSize+1<<20,
+	), UploadVideoHandler)
 	// 第46课：个性化推荐Feed
 	auth.GET("/feed/recommend", ListRecommendFeedHandler)
 	return r

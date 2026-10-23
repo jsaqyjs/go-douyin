@@ -6,6 +6,7 @@ import (
 	"go-douyin/models"
 	"go-douyin/routers"
 	"go-douyin/service/hot_service"
+	"go-douyin/storage"
 	"log"
 )
 
@@ -46,7 +47,12 @@ func main() {
 	)
 	defer cancel()
 
-	go hot_service.RunHotWorker(ctx)
+	go hot_service.RebuildHotRank(ctx)
+	// 启动对象存储
+	if err := storage.InitMinIO(); err != nil {
+		log.Fatal(err)
+	}
+
 	r := routers.InitRouter()
 	r.Run(":8085")
 
