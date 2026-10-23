@@ -37,10 +37,10 @@ func LoadInterests(
 	var rows []likedCategory
 
 	err := database.DB.WithContext(ctx).
-		Table("video_likes AS l").
+		Table("video_like AS l").
 		Select("v.category AS category").
 		Joins(
-			"JOIN videos AS v ON v.id = l.video_id",
+			"JOIN video AS v ON v.id = l.video_id",
 		).
 		Where(
 			"l.user_id = ? AND v.status = ?",
@@ -167,21 +167,21 @@ func ListRecommendFeed(
 	// 是否进行分类热点
 	result.ColdStart = len(interests) == 0
 
-	// 2. 查询最近30天、最多500条视频候选
-	var videos []models.Video
+	// 2. 查询近期已经点赞的视频ID
+	likedIDs, err := LoadRecentLikedIDs(ctx, userID)
+	if err != nil {
+		return result, err
+	}
 
-	err = database.DB.WithContext(ctx).
-		Where(
-			"status = ? AND created_at <= ? AND created_at >= ?",
-			1,
-			asOf,
-			asOf.Add(-30*24*time.Hour),
-		).
-		Order("created_at DESC").
-		Order("id DESC").
-		Limit(candidateLimit).
-		Find(&videos).Error
-
+	// 3. 根据用户兴趣决定召回路径
+	// 有兴趣：兴趣 + 热门 + 最新
+	// 无兴趣：热门 + 最新
+	videos, err := RecallCandidates(
+		ctx,
+		interests,
+		likedIDs,
+		asOf,
+	)
 	if err != nil {
 		return result, err
 	}
