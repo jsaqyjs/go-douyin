@@ -71,7 +71,9 @@ func InitRouter() *gin.Engine {
 	auth.POST("/videos/upload", middleware.UploadBodyLimit(
 		upload_service.MaxVideoSize+1<<20,
 	), UploadVideoHandler)
+	auth.POST("/videos/publish-uploaded", PublishUploadedVideoHandler)
 	// 第46课：个性化推荐Feed
 	auth.GET("/feed/recommend", ListRecommendFeedHandler)
+
 	return r
 }

@@ -342,7 +342,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnby1kb3V5a
 
 ### 第48课：上传MP4
 POST http://127.0.0.1:8085/videos/upload
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnby1kb3V5aW4iLCJzdWIiOiIzIiwiZXhwIjoxNzkyNzUzNzI0LCJpYXQiOjE3OTI3NDY1MjR9.FcjvoiwWCoV-F6M8F-ga9Jol9nFsMcNfTD2GGt55i0E
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnby1kb3V5aW4iLCJzdWIiOiIzIiwiZXhwIjoxNzkyODQ1MzYzLCJpYXQiOjE3OTI4MzgxNjN9.OyapFKoKt0Tx0OGypxJbZRQT6RWjvuMxNnzAL79_T4c
 Content-Type: multipart/form-data; boundary=UploadBoundary
 
 --UploadBoundary
@@ -351,3 +351,50 @@ Content-Type: video/mp4
 
 < C:/Users/ASUS/Videos/2月9日.mp4
 --UploadBoundary--
+
+
+
+
+### 1. 上传视频
+POST http://127.0.0.1:8080/videos/upload
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=UploadBoundary
+
+--UploadBoundary
+Content-Disposition: form-data; name="file"; filename="demo.mp4"
+Content-Type: video/mp4
+
+< D:/GoWorks/test-videos/demo.mp4
+--UploadBoundary--
+
+
+### 2. 发布已经上传的视频
+# 替换为上一步返回的 object_key
+POST http://127.0.0.1:8085/videos/publish-uploaded
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnby1kb3V5aW4iLCJzdWIiOiIzIiwiZXhwIjoxNzkyODQ1MzYzLCJpYXQiOjE3OTI4MzgxNjN9.OyapFKoKt0Tx0OGypxJbZRQT6RWjvuMxNnzAL79_T4c
+Content-Type: application/json
+
+{
+  "title": "第49课视频发布测试",
+  "description": "测试MinIO文件与MySQL视频发布流程",
+  "category": "tech",
+  "object_key": "videos/3/b86154b429a5cd00ca28aefb913bcb33.mp4"
+}
+
+
+### 3. 获取视频播放地址
+# 替换为发布成功返回的video_id
+GET http://127.0.0.1:8085/videos/13/play-url
+
+
+### 4. 重复发布
+# 这里仍然使用第二步的object_key
+POST http://127.0.0.1:8085/videos/publish-uploaded
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnby1kb3V5aW4iLCJzdWIiOiIzIiwiZXhwIjoxNzkyODQ1MzYzLCJpYXQiOjE3OTI4MzgxNjN9.OyapFKoKt0Tx0OGypxJbZRQT6RWjvuMxNnzAL79_T4c
+Content-Type: application/json
+
+{
+  "title": "重复发布测试",
+  "category": "tech",
+  "object_key": "videos/3/b86154b429a5cd00ca28aefb913bcb33.mp4"
+}

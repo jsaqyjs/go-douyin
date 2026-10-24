@@ -8,6 +8,8 @@ import (
 	"errors"
 	"fmt"
 	"github.com/minio/minio-go/v7"
+	"go-douyin/database"
+	"go-douyin/models"
 	"go-douyin/storage"
 	"io"
 	"log"
@@ -15,6 +17,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 )
 
 const MaxVideoSize int64 = 100 << 20
@@ -87,7 +90,6 @@ func UploadVideo(
 	log.Printf("upload video %s to %s", objectKey, fileHeader.Filename)
 	// client
 	s := storage.MinIO
-	log.Print("这里错了码3？")
 	if s == nil {
 		return result, errors.New("MinIO未初始化")
 	}
@@ -103,12 +105,38 @@ func UploadVideo(
 			ContentType: "video/mp4",
 		},
 	)
-	log.Print("这里错了码？")
 	if err != nil {
 		return result, fmt.Errorf("上传MinIO失败: %w", err)
 	}
+	asset := models.UploadAsset{
+		UserID:    userID,
+		ObjectKey: objectKey,
+		Size:      fileHeader.Size,
+		Status:    models.AssetUploaded,
+	}
+	err = database.DB.WithContext(ctx).
+		Create(&asset).Error
+	if err != nil {
+		// MinIO上传成功，但数据库登记失败。
+		// 用独立超时Context尽力删除文件。
+		cleanupCtx, cancel := context.WithTimeout(
+			context.Background(),
+			10*time.Second,
+		)
+		defer cancel()
+
+		_ = s.Client.RemoveObject(
+			cleanupCtx,
+			s.Bucket,
+			objectKey,
+			minio.RemoveObjectOptions{},
+		)
+
+		return result, fmt.Errorf(
+			"登记上传文件失败: %w", err,
+		)
+	}
 	playURL, err := s.PresignReadURL(ctx, objectKey)
-	log.Print("这里错了码2？")
 	if err != nil {
 		// 上传成功但临时URL生成失败：
 		// 尝试回滚已上传的对象。

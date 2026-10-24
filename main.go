@@ -6,6 +6,7 @@ import (
 	"go-douyin/models"
 	"go-douyin/routers"
 	"go-douyin/service/hot_service"
+	"go-douyin/service/upload_service"
 	"go-douyin/storage"
 	"log"
 )
@@ -36,7 +37,7 @@ func main() {
 	}()
 	// 3. 创建数据库表
 	if err := database.DB.AutoMigrate(&models.User{}, &models.Video{},
-		&models.Comment{}, &models.VideoLike{}, &models.OutboxEvent{},
+		&models.Comment{}, &models.UploadAsset{}, &models.VideoLike{}, &models.OutboxEvent{},
 		&models.Follow{}, &models.VideoFavorite{}); err != nil {
 		log.Fatal("数据库迁移失败: ", err)
 	}
@@ -46,7 +47,7 @@ func main() {
 		context.Background(),
 	)
 	defer cancel()
-
+	go upload_service.RunCleanupWorker(ctx)
 	go hot_service.RebuildHotRank(ctx)
 	// 启动对象存储
 	if err := storage.InitMinIO(); err != nil {

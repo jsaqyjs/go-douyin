@@ -140,3 +140,68 @@ func GetVideoPlayURLHandler(c *gin.Context) {
 		},
 	})
 }
+func PublishUploadedVideoHandler(c *gin.Context) {
+	userID, ok := middleware.GetCurrentUserID(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"code":    401,
+			"message": "未登录",
+		})
+		return
+	}
+
+	var input upload_service.PublishUploadedInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"code":    400,
+			"message": "请求JSON不合法",
+		})
+		return
+	}
+
+	videoID, err := upload_service.PublishUploadedVideo(
+		c.Request.Context(),
+		userID,
+		input,
+	)
+
+	switch {
+	case errors.Is(err, upload_service.ErrBadPublish):
+		c.JSON(http.StatusBadRequest, gin.H{
+			"code":    400,
+			"message": "发布参数不合法",
+		})
+
+	case errors.Is(err, upload_service.ErrAssetNotFound):
+		c.JSON(http.StatusNotFound, gin.H{
+			"code":    404,
+			"message": "上传记录不存在",
+		})
+
+	case errors.Is(err, upload_service.ErrAssetForbidden):
+		c.JSON(http.StatusForbidden, gin.H{
+			"code":    403,
+			"message": "不能发布其他用户的文件",
+		})
+
+	case errors.Is(err, upload_service.ErrAssetUnavailable):
+		c.JSON(http.StatusConflict, gin.H{
+			"code":    409,
+			"message": "文件不可发布或已被使用",
+		})
+
+	case err != nil:
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"code":    500,
+			"message": "发布失败",
+		})
+
+	default:
+		c.JSON(http.StatusCreated, gin.H{
+			"code": 0,
+			"data": gin.H{
+				"video_id": videoID,
+			},
+		})
+	}
+}
